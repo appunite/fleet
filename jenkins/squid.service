@@ -1,0 +1,14 @@
+[Unit]
+Description=Squid Service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull sameersbn/squid:latest
+ExecStart=/usr/bin/docker run --name=%n \
+  --env=CACHE_MAX_SIZE=1024 \
+  --env=CACHE_MAX_OBJECT_SIZE=100 \
+  sameersbn/squid:latest
+
+ExecStop=/usr/bin/docker stop %n
