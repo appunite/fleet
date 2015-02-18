@@ -30,7 +30,7 @@ ExecStart=/usr/bin/docker run --volumes-from jenkins-volume.service \
 ExecStartPost=/usr/bin/etcdctl set /services/nginx/jenkins/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"10001\"}"
 
 ExecStopPre=/usr/bin/etcdctl rm /services/nginx/jenkins/servers/1
-ExecStop=/usr/bin/docke stop %n
+ExecStop=/usr/bin/docker stop %n
 
 [X-Fleet]
 MachineOf=jenkins-volume.service
