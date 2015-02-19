@@ -11,12 +11,12 @@ TimeoutStartSec=10m
 Restart=always
 ExecStartPre=-/usr/bin/docker kill heapster
 ExecStartPre=-/usr/bin/docker rm -f heapster
-ExecStartPre=/usr/bin/docker pull vish/heapster
+ExecStartPre=/usr/bin/docker pull vish/heapster:canary
 ExecStart=/usr/bin/docker run \
   --name heapster \
   --env INFLUXDB_HOST=${COREOS_PRIVATE_IPV4}:10004 \
   --volume /home/core/heapster:/var/run/heapster \
-  vish/heapster
+  vish/heapster:canary
 ExecStop=/usr/bin/docker stop -t 2 heapster
 
 [X-Fleet]

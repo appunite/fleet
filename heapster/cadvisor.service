@@ -15,7 +15,7 @@ ExecStart=/usr/bin/docker run \
   --volume=/var/run:/var/run:rw \
   --volume=/sys:/sys:ro \
   --volume=/var/lib/docker/:/var/lib/docker:ro \
-  --publish=4194:4194 \
+  --publish=8080:4194 \
   --name=cadvisor \
   google/cadvisor:latest \
   --logtostderr \
