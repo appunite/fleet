@@ -1,0 +1,23 @@
+[Unit]
+Description=InfluxDB Service
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=10m
+Restart=always
+ExecStartPre=-/usr/bin/docker kill influxdb
+ExecStartPre=-/usr/bin/docker rm -f influxdb
+ExecStartPre=/usr/bin/docker pull kubernetes/heapster_influxdb
+ExecStart=/usr/bin/docker run \
+  --name influxdb \
+  --publish ${COREOS_PRIVATE_IPV4}:8083:8083 \
+  --publish ${COREOS_PRIVATE_IPV4}:10004:8086 \
+  --publish ${COREOS_PRIVATE_IPV4}:8090:8090 \
+  --publish ${COREOS_PRIVATE_IPV4}:8099:8099 \
+  kubernetes/heapster_influxdb
+ExecStartPost=/usr/bin/etcdctl set /services/nginx/influx/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"10004\"}"
+
+ExecStop=/usr/bin/etcdctl rm /services/nginx/influx/servers/1
+ExecStop=/usr/bin/docker stop -t 2 influxdb

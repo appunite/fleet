@@ -125,3 +125,54 @@ fleetctl start nginx@{1..3}.service
 curl https://jenkins.example.com
 ```
 
+
+
+## Using cadvisor + heapster + grafna
+
+### Run
+
+Setup your keys for grafana and influxDB:
+
+```bash
+etcdctl mkdir /services/nginx/grafana/
+etcdctl mkdir /services/nginx/grafana/servers/
+etcdctl set /services/nginx/grafana/root 'grafana.example.com'
+cat www-server.crt | etcdctl set /services/nginx/grafana/ssl-crt
+cat www-server.key | etcdctl set /services/nginx/grafana/ssl-key
+
+
+etcdctl mkdir /services/nginx/influx/
+etcdctl mkdir /services/nginx/influx/servers/
+etcdctl set /services/nginx/influx/root 'influx.example.com'
+cat www-server.crt | etcdctl set /services/nginx/influx/ssl-crt
+cat www-server.key | etcdctl set /services/nginx/influx/ssl-key
+```
+
+Run all services
+
+```bash
+cd heapster
+fleetctl start cadvisor.service influxdb.service heapster-agent.service heapster.service grafana.service
+# verify if everything working
+fleetctl list-units
+```
+
+Look for login and password in logs:
+
+```bash
+fleetctl journal -follow grafana
+>You can now connect to Grafana with the following credential:
+>
+>	admin:fDnFb7zcWWQ5
+
+open https://grafana.example.com
+```
+
+### Setup grafana
+
+* Open https://grafana.example.com. 
+* On right corner click "directory" icon
+* Click "import"
+* Select Choose `kubernetes-dashboard.json` file from repo
+
+Now you are done

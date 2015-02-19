@@ -1,0 +1,23 @@
+[Unit]
+Description=Heapster Agent Service
+After=docker.service
+After=heapster-agent.service
+Requires=docker.service
+Requires=heapster-agent.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=10m
+Restart=always
+ExecStartPre=-/usr/bin/docker kill heapster
+ExecStartPre=-/usr/bin/docker rm -f heapster
+ExecStartPre=/usr/bin/docker pull vish/heapster
+ExecStart=/usr/bin/docker run \
+  --name heapster \
+  --env INFLUXDB_HOST=${COREOS_PRIVATE_IPV4}:10004 \
+  --volume /home/core/heapster:/var/run/heapster \
+  vish/heapster
+ExecStop=/usr/bin/docker stop -t 2 heapster
+
+[X-Fleet]
+MachineOf=heapster-agent.service

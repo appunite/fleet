@@ -1,0 +1,30 @@
+[Unit]
+Description=Grafana Service
+After=docker.service
+After=influxdb.service
+Requires=docker.service
+Requires=influxdb.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=10m
+Restart=always
+ExecStartPre=-/usr/bin/docker kill grafana
+ExecStartPre=-/usr/bin/docker rm -f grafana
+ExecStartPre=/usr/bin/docker pull tutum/grafana
+ExecStart=/usr/bin/docker run \
+  --name grafana \
+  --publish ${COREOS_PRIVATE_IPV4}:10002:80 \
+  --env INFLUXDB_HOST=influx.appunite.net \
+  --env INFLUXDB_PROTO=https \
+  --env INFLUXDB_PORT=443 \
+  --env INFLUXDB_NAME=k8s \
+  tutum/grafana
+
+ExecStartPost=/usr/bin/etcdctl set /services/nginx/grafana/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"10002\"}"
+ExecStop=/usr/bin/etcdctl rm /services/nginx/grafana/servers/1
+ExecStop=/usr/bin/docker stop -t 2 grafana
+
+
+[X-Fleet]
+MachineOf=influxdb.service
