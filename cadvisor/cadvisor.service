@@ -1,0 +1,32 @@
+[Unit]
+Description=cAdvisor Service
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/environment
+TimeoutStartSec=10m
+Restart=always
+ExecStartPre=-/usr/bin/docker kill cadvisor
+ExecStartPre=-/usr/bin/docker rm -f cadvisor
+ExecStartPre=/usr/bin/etcdctl mkdir /services/nginx/cadvisor_${COREOS_PRIVATE_IPV4}/
+ExecStartPre=/usr/bin/etcdctl mkdir /services/nginx/cadvisor_${COREOS_PRIVATE_IPV4}/servers/
+ExecStartPre=/usr/bin/docker pull google/cadvisor
+ExecStart=/usr/bin/docker run \
+  --volume=/:/rootfs:ro \
+  --volume=/var/run:/var/run:rw \
+  --volume=/sys:/sys:ro \
+  --volume=/var/lib/docker/:/var/lib/docker:ro \
+  --publish=${COREOS_PRIVATE_IPV4}:10020:4194 \
+  --name=cadvisor \
+  google/cadvisor:latest \
+  --logtostderr \
+  --port=4194
+ExecStop=/usr/bin/docker stop -t 2 cadvisor
+
+ExecStartPost=/usr/bin/etcdctl set /services/nginx/cadvisor_${COREOS_PRIVATE_IPV4}/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"10020\"}"
+ExecStop=/usr/bin/etcdctl rm /services/nginx/advisor_${COREOS_PRIVATE_IPV4}/servers/1
+
+
+[X-Fleet]
+Global=true
