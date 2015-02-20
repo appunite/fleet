@@ -17,6 +17,10 @@ TimeoutStartSec=0
 # work correctly.
 KillMode=none
 
+# Restart policy
+Restart=on-failure
+RestartSec=5
+
 # Run and stop
 ExecStartPre=-/usr/bin/docker kill nginx-confd%i
 ExecStartPre=-/usr/bin/docker rm nginx-confd%i
