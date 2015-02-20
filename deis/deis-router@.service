@@ -7,9 +7,10 @@ TimeoutStartSec=20m
 ExecStartPre=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/router` && docker history $IMAGE >/dev/null || docker pull $IMAGE"
 ExecStartPre=/bin/sh -c "docker inspect deis-router >/dev/null && docker rm -f deis-router || true"
 ExecStart=/bin/sh -c "IMAGE=`/run/deis/bin/get_image /deis/router` && docker run --name deis-router --rm -p 8081:80 -p 2222:2222 -p 4443:443 -e EXTERNAL_PORT=80 -e HOST=$COREOS_PRIVATE_IPV4 $IMAGE"
-ExecStartPost=/usr/bin/etcdctl set /services/nginx/deis/servers/%i "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\":\"8081\"}"
-ExecStopPost=/usr/bin/etcdctl rm /services/nginx/deis/servers/%i
-ExecStopPost=-/usr/bin/docker rm -f deis-router
+ExecStartPost=/usr/bin/etcdctl set /services/nginx/x_deis/servers/%i "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\":\"8081\"}"
+
+ExecStop=/usr/bin/etcdctl rm /services/nginx/x_deis/servers/%i
+ExecStop=-/usr/bin/docker rm -f deis-router
 Restart=on-failure
 RestartSec=5
 
