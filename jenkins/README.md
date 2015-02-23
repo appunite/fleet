@@ -39,3 +39,6 @@ Test via nginx
 fleetctl start nginx@{1..3}.service
 curl https://jenkins.example.com
 ```
+
+## Backup and restore
+[backup and restore doc is here](doc-backup.md)
