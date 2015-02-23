@@ -62,9 +62,10 @@ fleetctl destroy test
 
 
 ## Services
-[Nginx](nginx/README.md)
-[Datadog monitoring](datadog/README.md)
-[Jenkins](jenkins/README.md)
-[cAdvisor](cadvisor/README.md)
-[deis router](deis/README.md)
+
+* [Nginx](nginx/README.md)
+* [Datadog monitoring](datadog/README.md)
+* [Jenkins](jenkins/README.md)
+* [cAdvisor](cadvisor/README.md)
+* [deis router](deis/README.md)
 
