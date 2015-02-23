@@ -20,15 +20,8 @@ feetctl list-machines -l
 update in all `*.service` files `MachineID` to one of your machines than:
 
 ```bash
-cd jenkins
-
-fleetctl submit squid.service 
-fleetctl submit jenkins-volume.service 
-fleetctl submit jenkins.service 
-
-fleetctl start squid.service
-fleetctl start jenkins-volume.service 
-fleetctl start jenkins.service
+cd jenkins 
+fleetctl start squid.service jenkins-volume.service jenkins.service
 ```
 
 Test your jenkins installation
