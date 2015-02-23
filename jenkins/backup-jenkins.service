@@ -1,0 +1,21 @@
+[Unit]
+Description=Jenkins backup agent
+After=docker.service
+Requires=docker.service
+After=jenkins-volume.service
+
+[Service]
+TimeoutStartSec=0
+KillMode=none
+Type=oneshot
+
+ExecStart=/usr/bin/docker run \
+  --rm \
+  --volumes-from gcloud-config \
+  --volumes-from jenkins-volume.service \
+  google/cloud-sdk \
+  /bin/bash -c "tar --exclude='/jenkins/jobs/*/workspace*/*' --exclude='/jenkins/jobs/*/builds/*/archive' -zcvf /tmp/file.tar.gz /jenkins && gsutil cp tmp/file.tar.gz gs://au-router/docker-backups/backup2_$(date +'%%Y-%%m-%%d_%%H%%M%%S')/jenkins.tar.gz"
+
+[X-Fleet]
+MachineOf=jenkins-volume.service
+MachineOf=gcloud-config.service

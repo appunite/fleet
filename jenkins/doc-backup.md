@@ -1,44 +1,9 @@
 
-
-Detect where your jenkins is:
-
-```bash
-fleetctl list-units
-> jenkins.service				85945e91.../62.210.244.113	active	running
-export SERVER_SSH=core@62.210.244.113
-```
-
-Copy p12 key for your google storage login:
-
-```bash
-scp ~/Downloads/your-key.p12 $SERVER_SSH:~/your-key.p12
-```
-
-Ssh to your machine:
-
-```bash
-ssh $SERVER_SSH
-```
-
-On the core os machine:
-
-```bash
-# setup your auth storage volume
-docker run --volume /.config --name gcloud-config busybox true
-
-# install key
-docker run --volumes-from gcloud-config \
-  --volume $HOME/your-key.p12:/tmp/your-key-on-docker.p12 \
-  --tty \
-  --interactive \
-  --rm google/cloud-sdk \
-  gcloud auth activate-service-account <your-service-account-email> --key-file /tmp/your-key-on-docker.p12 --project <your-project-id>
-
-# test if everything works
-docker run --volumes-from gcloud-config --interactive --tty --rm google/cloud-sdk gsutil ls gs://<your-bucket>/
-```
+# Jenkins backup and restore
 
 ## Restore data from jenkins backup:
+
+Prepare your backup service according to [backup doc](../backup/README.md)
 
 On your machine:
 
@@ -52,11 +17,11 @@ On coreos:
 docker run \
   --tty \
   --interactive \
-  -- rm \
-  --volumes-from jenkins-data \
+  --rm \
+  --volumes-from jenkins-volume.service \
   --volumes-from gcloud-config \
   google/cloud-sdk \
-  /bin/bash -c "gsutil cat gs://<your-backup-file> | tar xvf"
+  /bin/bash -c "gsutil cat gs://<your-backup-file>.tar.gz | tar xvf"
 ```
 
 On your machine:
@@ -71,3 +36,33 @@ open jenkins.appunite.net
 ```
 
 
+## Backup your data manuall
+On coreos machine:
+
+```bash
+DIR=gs://au-router/docker-backups/backup_$(date +"%Y-%d-%m_%H%M%S")
+
+docker run \
+  --tty \
+  --interactive \
+  --volumes-from gcloud-config \
+  --volumes-from jenkins-volume.service \
+  --volume=$(pwd):/backup \
+  google/cloud-sdk \
+  /bin/bash -c "tar --exclude='/jenkins/jobs/*/workspace*/*' --exclude='/jenkins/jobs/*/builds/*/archive' -zcvf /tmp/file.tar.gz /jenkins && gsutil cp /tmp/file.tar.gz ${DIR}/jenkins.tar.gz"
+```
+
+
+## Backup via etcdctl
+
+### Backup one shot
+
+```bash
+fleetctl load backup-jenkins.service
+```
+
+### backup timer
+
+```bash
+fleetctl load backup-jenkins-timer.timer 
+```

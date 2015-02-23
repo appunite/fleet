@@ -1,0 +1,15 @@
+[Unit]
+Description=Gcloud config service
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+KillMode=none
+Type=oneshot
+
+ExecStart=-/usr/bin/docker run --volume /.config --name gcloud-config busybox true
+ExecStop=/usr/bin/docker stop gcloud-config
+
+[X-Fleet]
+Global=true

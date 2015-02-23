@@ -1,0 +1,10 @@
+[Unit]
+Description=Jenkins backup timer
+After=docker.service
+Requires=docker.service
+
+[Timer]
+OnCalendar=10m
+
+[X-Fleet]
+MachineOf=backup-jenkins.service
