@@ -20,12 +20,12 @@ EnvironmentFile=/etc/environment
 ExecStartPre=-/usr/bin/docker kill jenkins-slave
 ExecStartPre=-/usr/bin/docker rm jenkins-slave
 ExecStartPre=/usr/bin/docker pull jacekmarchwicki/jenkins
-ExecStart=/usr/bin/docker run --volumes-from jenkins-volume.service \
+ExecStart=/usr/bin/docker run \
   --privileged \
   --link squid.service:squid \
   --env ROOT_PASSWORD=some-password \
   --name jenkins-slave \
-  --publish ${COREOS_PRIVATE_IPV4}:21:21 \
+  --publish ${COREOS_PRIVATE_IPV4}:10021:21 \
   jacekmarchwicki/jenkins \
   wrapdocker slave.sh
 
@@ -33,3 +33,4 @@ ExecStop=/usr/bin/docker stop jenkins-slave
 
 [X-Fleet]
 MachineOf=squid.service
+Conflicts=jenkins-slave@*.service
