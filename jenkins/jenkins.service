@@ -19,8 +19,8 @@ KillMode=none
 EnvironmentFile=/etc/environment
 
 # Run and stop
-ExecStartPre=-/usr/bin/docker kill %n
-ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=-/usr/bin/docker kill jenkins
+ExecStartPre=-/usr/bin/docker rm jenkins
 ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/jenkins/
 ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/jenkins/servers/
 ExecStartPre=/usr/bin/etcdctl set /services/nginx/jenkins/root 'jenkins.appunite.net'
@@ -28,15 +28,13 @@ ExecStartPre=/usr/bin/docker pull jacekmarchwicki/jenkins
 ExecStart=/usr/bin/docker run --volumes-from jenkins-volume.service \
   --privileged \
   --link squid.service:squid \
-  --volume /var/lib/docker:/var/lib/docker \
-  --name %n \
+  --name jenkins \
   --publish ${COREOS_PRIVATE_IPV4}:10001:8080 \
-  jacekmarchwicki/jenkins \
-  run.sh
+  jacekmarchwicki/jenkins
 ExecStartPost=/usr/bin/etcdctl set /services/nginx/jenkins/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"10001\"}"
 
 ExecStop=-/usr/bin/etcdctl rm /services/nginx/jenkins/servers/1
-ExecStop=/usr/bin/docker stop %n
+ExecStop=/usr/bin/docker stop jenkins
 
 [X-Fleet]
 MachineID=85945e91c59d43beb058193ce59e8b5e

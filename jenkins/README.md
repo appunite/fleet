@@ -42,3 +42,19 @@ curl https://jenkins.example.com
 
 ## Backup and restore
 [backup and restore doc is here](doc-backup.md)
+
+## Run jenkins-slave
+
+```bash
+fleetctl start jenkins-slave@{1..2}
+```
+
+Configure Jenkins:
+* Manage Jenkins -> Manage nodes -> New Node
+* Type your name and select `Dumb slave`, than `OK`
+* `Remote root directory` = `/jenkins`
+* `Host` = from `fleetctl list-units` `fleetctl ssh f7e21643` `cat /etc/environment` your COREOS_PRIVATE_IPV4
+* `Credentials` -> `Add`, Login `root`, Password `some-password`
+* In `Advanced` set `Port` to `10022`
+
+

@@ -1,0 +1,36 @@
+[Unit]
+Description=Jenkins Service
+After=docker.service
+Requires=docker.service
+Requires=squid.service
+
+
+[Service]
+# Let processes take awhile to start up (for first run Docker containers)
+TimeoutStartSec=0
+
+# Change killmode from "control-group" to "none" to let Docker remove
+# work correctly.
+KillMode=none
+
+# Get CoreOS environmental variables
+EnvironmentFile=/etc/environment
+
+# Run and stop
+ExecStartPre=-/usr/bin/docker kill jenkins-slave
+ExecStartPre=-/usr/bin/docker rm jenkins-slave
+ExecStartPre=/usr/bin/docker pull jacekmarchwicki/jenkins
+ExecStart=/usr/bin/docker run \
+  --privileged \
+  --link squid.service:squid \
+  --env ROOT_PASSWORD=some-password \
+  --name jenkins-slave \
+  --publish ${COREOS_PRIVATE_IPV4}:10022:22 \
+  jacekmarchwicki/jenkins \
+  wrapdocker slave.sh
+
+ExecStop=/usr/bin/docker stop jenkins-slave
+
+[X-Fleet]
+MachineOf=squid.service
+Conflicts=jenkins-slave@*.service
