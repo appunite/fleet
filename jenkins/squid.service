@@ -14,4 +14,4 @@ ExecStart=/usr/bin/docker run --name=%n \
 ExecStop=/usr/bin/docker stop %n
 
 [X-Fleet]
-MachineID=85945e91c59d43beb058193ce59e8b5e
+Global=true

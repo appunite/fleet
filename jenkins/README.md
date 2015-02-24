@@ -42,3 +42,10 @@ curl https://jenkins.example.com
 
 ## Backup and restore
 [backup and restore doc is here](doc-backup.md)
+
+## Run jenkins-slave
+
+```bash
+fleetctl start jenkins-slave@{1..2}
+```
+

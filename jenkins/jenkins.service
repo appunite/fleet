@@ -28,11 +28,9 @@ ExecStartPre=/usr/bin/docker pull jacekmarchwicki/jenkins
 ExecStart=/usr/bin/docker run --volumes-from jenkins-volume.service \
   --privileged \
   --link squid.service:squid \
-  --volume /var/lib/docker:/var/lib/docker \
   --name jenkins \
   --publish ${COREOS_PRIVATE_IPV4}:10001:8080 \
-  jacekmarchwicki/jenkins \
-  run.sh
+  jacekmarchwicki/jenkins
 ExecStartPost=/usr/bin/etcdctl set /services/nginx/jenkins/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"10001\"}"
 
 ExecStop=-/usr/bin/etcdctl rm /services/nginx/jenkins/servers/1
