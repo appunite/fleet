@@ -25,7 +25,7 @@ ExecStart=/usr/bin/docker run \
   --link squid.service:squid \
   --env ROOT_PASSWORD=some-password \
   --name jenkins-slave \
-  --publish ${COREOS_PRIVATE_IPV4}:10021:21 \
+  --publish ${COREOS_PRIVATE_IPV4}:10022:22 \
   jacekmarchwicki/jenkins \
   wrapdocker slave.sh
 
