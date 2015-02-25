@@ -1,0 +1,26 @@
+[Unit]
+Description=Redis service
+After=docker.service
+After=redis-volume.service
+Requires=docker.service
+
+
+[Service]
+TimeoutStartSec=0
+KillMode=none
+EnvironmentFile=/etc/environment
+
+# Run and stop
+ExecStartPre=-/usr/bin/etcdctl mkdir /services/redis
+ExecStartPre=-/usr/bin/docker kill redis
+ExecStartPre=-/usr/bin/docker rm redis
+ExecStartPre=/usr/bin/docker pull dockerfile/redis
+ExecStart=/usr/bin/docker run --volumes-from redis-volume.service \
+	    --name redis \
+	    --publish ${COREOS_PRIVATE_IPV4}:6379:6379 \
+      dockerfile/redis
+
+ExecStop=/usr/bin/docker stop redis
+
+[X-Fleet]
+MachineID=f7e216431efa45b89b287fa3e2c1e0e3

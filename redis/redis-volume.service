@@ -1,0 +1,15 @@
+[Unit]
+Description=Redis volume Service
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+KillMode=none
+Type=oneshot
+
+ExecStart=-/usr/bin/docker run --volume /data --name %n busybox true
+ExecStop=/usr/bin/docker stop %n
+
+[X-Fleet]
+MachineID=f7e216431efa45b89b287fa3e2c1e0e3
