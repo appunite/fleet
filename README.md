@@ -68,6 +68,7 @@ fleetctl destroy test
 * [Jenkins](jenkins/README.md)
 * [cAdvisor](cadvisor/README.md)
 * [deis router](deis/README.md)
+* [postgres](postgres/README.md)
 
 ## License
 

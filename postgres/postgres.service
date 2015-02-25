@@ -1,0 +1,29 @@
+[Unit]
+Description=Postgress service
+After=docker.service
+Requires=docker.service
+
+
+[Service]
+TimeoutStartSec=0
+KillMode=none
+EnvironmentFile=/etc/environment
+
+# Run and stop
+ExecStartPre=-/usr/bin/etcdctl mkdir /services/postgres
+ExecStartPre=-/usr/bin/docker kill postgres
+ExecStartPre=-/usr/bin/docker rm postgres
+ExecStartPre=/usr/bin/docker pull postgres:9.4.1
+ExecStart=/bin/bash -c "\
+          set -e; \
+          POSTGRES_PASSWORD=$(etcdctl get /services/postgres/password 2>/dev/null); \
+	  /usr/bin/docker run --volume /var/postgres \
+	    --env POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+	    --name postgres \
+	    --publish ${COREOS_PRIVATE_IPV4}:5433:5432 \
+	    postgres:9.4.1"
+
+ExecStop=/usr/bin/docker stop postgres
+
+[X-Fleet]
+MachineID=1210e283a91242d598c18e33266a28b6
