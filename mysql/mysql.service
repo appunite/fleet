@@ -1,0 +1,29 @@
+[Unit]
+Description=Mysql service
+After=docker.service
+Requires=docker.service
+
+
+[Service]
+TimeoutStartSec=0
+KillMode=none
+EnvironmentFile=/etc/environment
+
+# Run and stop
+ExecStartPre=-/usr/bin/etcdctl mkdir /services/mysql
+ExecStartPre=-/usr/bin/docker kill mysql
+ExecStartPre=-/usr/bin/docker rm mysql
+ExecStartPre=/usr/bin/docker pull mysql:5.7.5
+ExecStart=/bin/bash -c "\
+          set -e; \
+          MYSQL_ROOT_PASSWORD=$(etcdctl get /services/mysql/password 2>/dev/null); \
+	  /usr/bin/docker run --volume /var/mysql \
+	    --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD \
+	    --name mysql \
+	    --publish ${COREOS_PRIVATE_IPV4}:3306:3306 \
+	    mysql:5.7.5"
+
+ExecStop=/usr/bin/docker stop mysql
+
+[X-Fleet]
+MachineID=1210e283a91242d598c18e33266a28b6
