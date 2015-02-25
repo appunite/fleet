@@ -66,6 +66,7 @@ fleetctl destroy test
 * [Nginx](nginx/README.md)
 * [Datadog monitoring](datadog/README.md)
 * [Jenkins](jenkins/README.md)
+* [MySQL](mysql/README.md)
 * [cAdvisor](cadvisor/README.md)
 * [deis router](deis/README.md)
 * [postgres](postgres/README.md)
