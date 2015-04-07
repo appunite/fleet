@@ -1,0 +1,32 @@
+[Unit]
+Description=Gitlab CI Postgresql
+After=docker.service
+Requires=docker.service
+
+[Service]
+# Let processes take awhile to start up (for first run Docker containers)
+TimeoutStartSec=0
+
+# Change killmode from "control-group" to "none" to let Docker remove
+# work correctly.
+KillMode=none
+
+# Get CoreOS environmental variables
+EnvironmentFile=/etc/environment
+
+# Run and stop
+ExecStartPre=-/usr/bin/docker kill gitlab-postgresql
+ExecStartPre=-/usr/bin/docker rm gitlab-postgresql
+ExecStartPre=/usr/bin/docker pull sameersbn/postgresql:latest
+ExecStart=/usr/bin/docker run \
+  --rm \
+  --name gitlab-postgresql \
+  --env 'DB_NAME=gitlab_ci_production' \
+  --env 'DB_USER=gitlab_ci' -e 'DB_PASS=password' \
+  --volume /opt/postgresql/data:/var/lib/postgresql \
+  sameersbn/postgresql:latest
+
+ExecStop=/usr/bin/docker stop gitlab-postgresql
+
+[X-Fleet]
+MachineID=f7e216431efa45b89b287fa3e2c1e0e3

@@ -70,6 +70,7 @@ fleetctl destroy test
 * [cAdvisor](cadvisor/README.md)
 * [deis router](deis/README.md)
 * [postgres](postgres/README.md)
+* [gitlab-ci](gitlab-ci/README.md)
 
 ## License
 

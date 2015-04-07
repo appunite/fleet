@@ -1,0 +1,35 @@
+[Unit]
+Description=Gitlab CI runner
+After=docker.service
+Requires=docker.service
+
+
+[Service]
+# Let processes take awhile to start up (for first run Docker containers)
+TimeoutStartSec=0
+
+# Change killmode from "control-group" to "none" to let Docker remove
+# work correctly.
+KillMode=none
+
+# Get CoreOS environmental variables
+EnvironmentFile=/etc/environment
+
+# Run and stop
+ExecStartPre=-/usr/bin/docker kill gitlab-ci-runner
+ExecStartPre=-/usr/bin/docker rm gitlab-ci-runner
+ExecStartPre=/usr/bin/docker pull ayufan/gitlab-ci-multi-runner:latest
+ExecStart=/bin/bash -c "\
+          set -ex; \
+	  /usr/bin/docker run \
+		--privileged \
+		--name gitlab-ci-runner \
+		--volume /var/run/docker.sock:/var/run/docker.sock \
+		--volume $(which docker):/bin/docker \
+		--volume /opt/gitlab-ci-runner/data:/data \
+		ayufan/gitlab-ci-multi-runner:latest"
+
+ExecStop=/usr/bin/docker stop gitlab-ci-runner
+
+[X-Fleet]
+Conflicts=gitlab-ci-runner@*.service

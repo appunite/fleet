@@ -1,0 +1,50 @@
+[Unit]
+Description=Gitlab CI Service
+After=docker.service
+Requires=docker.service
+After=gitlab-postgresql.service
+Requires=gitlab-postgresql.service
+After=gitlab-redis.service
+Requires=gitlab-redis.service
+
+[Service]
+# Let processes take awhile to start up (for first run Docker containers)
+TimeoutStartSec=0
+
+# Change killmode from "control-group" to "none" to let Docker remove
+# work correctly.
+KillMode=none
+
+# Get CoreOS environmental variables
+EnvironmentFile=/etc/environment
+
+# Run and stop
+ExecStartPre=-/usr/bin/docker kill gitlab-ci
+ExecStartPre=-/usr/bin/docker rm gitlab-ci
+ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/gitlab-ci/
+ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/gitlab-ci/servers/
+ExecStartPre=/usr/bin/etcdctl set /services/nginx/gitlab-ci/root 'gitlab-ci.appunite.net'
+ExecStartPre=/usr/bin/docker pull sameersbn/gitlab-ci:7.9.2
+ExecStart=/bin/bash -c "\
+          set -ex; \
+          APP_ID=$(etcdctl get /services/nginx/gitlab-ci/appId 2>/dev/null); \
+          APP_SECRET=$(etcdctl get /services/nginx/gitlab-ci/appSecret 2>/dev/null); \
+	  /usr/bin/docker run \
+	        --name gitlab-ci \
+		--publish ${COREOS_PRIVATE_IPV4}:10032:80 \
+		--link gitlab-redis:redisio \
+		--link gitlab-postgresql:postgresql \
+		--env 'GITLAB_URL=https://git.appunite.com/' \
+		--env GITLAB_APP_ID=$APP_ID \
+		--env GITLAB_APP_SECRET=$APP_SECRET \
+		--volume /var/run/docker.sock:/run/docker.sock \
+		--volume $(which docker):/bin/docker \
+		--volume /opt/gitlab-ci/data:/home/gitlab_ci/data \
+		sameersbn/gitlab-ci:7.9.2"
+ExecStartPost=/usr/bin/etcdctl set /services/nginx/gitlab-ci/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"10032\"}"
+
+ExecStop=-/usr/bin/etcdctl rm /services/nginx/gitlab-ci/servers/1
+ExecStop=/usr/bin/docker stop gitlab-ci
+
+[X-Fleet]
+MachineID=f7e216431efa45b89b287fa3e2c1e0e3
