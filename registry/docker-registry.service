@@ -1,0 +1,46 @@
+[Unit]
+Description=Docker registry service
+After=docker.service
+Requires=docker.service
+
+[Service]
+# Let processes take awhile to start up (for first run Docker containers)
+TimeoutStartSec=0
+
+# Change killmode from "control-group" to "none" to let Docker remove
+# work correctly.
+KillMode=none
+
+# Get CoreOS environmental variables
+EnvironmentFile=/etc/environment
+
+# Run and stop
+ExecStartPre=-/usr/bin/docker kill docker-registry
+ExecStartPre=-/usr/bin/docker rm docker-registry
+ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/docker-registry/
+ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/docker-registry/servers
+ExecStartPre=/usr/bin/etcdctl set /services/nginx/docker-registry/root 'docker-registry.appunite.net'
+ExecStartPre=/usr/bin/docker pull registry:latest
+ExecStart=/bin/bash -c "\
+          set -ex; \
+          APP_KEY=$(etcdctl get /services/docker-registry/awsKey 2>/dev/null); \
+          APP_SECRET=$(etcdctl get /services/gitlab-ci/awsSecret 2>/dev/null); \
+          APP_BUCKET=$(etcdctl get /services/gitlab-ci/awsBucket 2>/dev/null); \
+	  /usr/bin/docker run \
+	        --name docker-registry \
+          -e SETTINGS_FLAVOR=s3 \
+          -e AWS_BUCKET=$APP_BUCKET \
+          -e STORAGE_PATH=/registry \
+          -e AWS_KEY=$APP_KEY \
+          -e AWS_SECRET=$APP_SECRET \
+          -e SEARCH_BACKEND=sqlalchemy \
+		--publish ${COREOS_PRIVATE_IPV4}:5000:5000 \
+		--volume /opt/docker-registry/data:/registry \
+		registry:latest"
+ExecStartPost=/usr/bin/etcdctl set /services/nginx/docker-registry/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"5000\"}"
+
+ExecStop=-/usr/bin/etcdctl rm /services/nginx/docker-registry/servers/1
+ExecStop=/usr/bin/docker stop docker-registry
+
+[X-Fleet]
+MachineID=1210e283a91242d598c18e33266a28b6
