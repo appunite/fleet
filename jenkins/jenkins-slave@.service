@@ -22,6 +22,7 @@ ExecStartPre=-/usr/bin/docker rm jenkins-slave
 ExecStartPre=/usr/bin/docker pull jacekmarchwicki/jenkins
 ExecStart=/usr/bin/docker run \
   --privileged \
+  --volume /opt/jenkins/slave:/jenkins \
   --link squid.service:squid \
   --env ROOT_PASSWORD=some-password \
   --name jenkins-slave \
