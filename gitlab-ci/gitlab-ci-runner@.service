@@ -26,8 +26,10 @@ ExecStart=/bin/bash -c "\
 		--name gitlab-ci-runner \
 		--volume /var/run/docker.sock:/var/run/docker.sock \
 		--volume $(which docker):/bin/docker \
-		--volume /opt/gitlab-ci-runner/data:/data \
-		ayufan/gitlab-ci-multi-runner:latest"
+		--volume /opt/gitlab-ci-runner/etc:/etc/gitlab-runner \
+		--volume /opt/gitlab-ci-runner/home:/home/gitlab-runner \
+		--workdir=/home/gitlab-runner \
+		ayufan/gitlab-ci-multi-runner:latest run"
 
 ExecStop=/usr/bin/docker stop gitlab-ci-runner
 
