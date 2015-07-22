@@ -18,7 +18,7 @@ Run gitlab
 feetctl list-machines -l
 ```
 
-update in all `*.service` files `MachineID` to one of your machines than:
+update in all `\*.service` files `MachineID` to one of your machines than:
 
 ```bash
 cd gitlab 
@@ -42,8 +42,22 @@ On every machine
 
 ```bash
 fleetctl ssh 1210e283
-docker exec --interactive --tty gitlab-ci-runner gitlab-ci-multi-runner setup
+docker run \
+	--privileged \
+	--volume /var/run/docker.sock:/var/run/docker.sock \
+	--volume $(which docker):/bin/docker \
+	--volume /opt/gitlab-ci-runner/etc:/etc/gitlab-runner \
+	--volume /opt/gitlab-ci-runner/home:/home/gitlab-runner \
+	--tty --interactive --rm \
+	--workdir=/home/gitlab-runner \
+	ayufan/gitlab-ci-multi-runner:latest register --limit 10 --docker-image jacekmarchwicki/android --url "https://gitlab-ci.appunite.net/" --tag-list android --executor docker --non-interactive --registration-token <YOUR_TOKEN> --description coreos1-android
 ```
 
+## Update
 
-
+```bash
+fleetctl destroy gitlab-ci-runner\@{1..3}.service
+fleetctl start gitlab-ci-runner\@{1..3}.service
+fleetctl destroy gitlab-ci.service
+fleetctl start gitlab-ci.service
+```
