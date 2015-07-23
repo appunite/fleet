@@ -24,11 +24,14 @@ ExecStartPre=-/usr/bin/docker rm gitlab-ci
 ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/gitlab-ci/
 ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/gitlab-ci/servers/
 ExecStartPre=/usr/bin/etcdctl set /services/nginx/gitlab-ci/root 'gitlab-ci.appunite.net'
-ExecStartPre=/usr/bin/docker pull sameersbn/gitlab-ci:7.12.2
+ExecStartPre=/usr/bin/docker pull sameersbn/gitlab-ci:7.13.0
 ExecStart=/bin/bash -c "\
           set -ex; \
           APP_ID=$(etcdctl get /services/nginx/gitlab-ci/appId 2>/dev/null); \
           APP_SECRET=$(etcdctl get /services/nginx/gitlab-ci/appSecret 2>/dev/null); \
+          APP_SECRET=$(etcdctl get /services/nginx/gitlab-ci/appSecret 2>/dev/null); \
+          GITLAB_CI_SECRETS_DB_KEY_BASE=$(etcdctl get /services/gitlab-ci-runner/db-key-base 2>/dev/null); \
+          GITLAB_CI_SECRETS_SESSION_KEY_BASE=$(etcdctl get /services/gitlab-ci-runner/session-key-base 2>/dev/null); \
 	  /usr/bin/docker run \
 	        --name gitlab-ci \
 		--publish ${COREOS_PRIVATE_IPV4}:10032:80 \
@@ -37,10 +40,12 @@ ExecStart=/bin/bash -c "\
 		--env 'GITLAB_URL=https://git.appunite.com/' \
 		--env GITLAB_APP_ID=$APP_ID \
 		--env GITLAB_APP_SECRET=$APP_SECRET \
+		--env GITLAB_CI_SECRETS_SESSION_KEY_BASE=$GITLAB_CI_SECRETS_SESSION_KEY_BASE \
+		--env GITLAB_CI_SECRETS_DB_KEY_BASE=$GITLAB_CI_SECRETS_DB_KEY_BASE \
 		--volume /var/run/docker.sock:/run/docker.sock \
 		--volume $(which docker):/bin/docker \
 		--volume /opt/gitlab-ci/data:/home/gitlab_ci/data \
-		sameersbn/gitlab-ci:7.12.2"
+		sameersbn/gitlab-ci:7.13.0"
 ExecStartPost=/usr/bin/etcdctl set /services/nginx/gitlab-ci/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"10032\"}"
 
 ExecStop=-/usr/bin/etcdctl rm /services/nginx/gitlab-ci/servers/1
