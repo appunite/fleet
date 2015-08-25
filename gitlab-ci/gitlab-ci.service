@@ -24,7 +24,7 @@ ExecStartPre=-/usr/bin/docker rm gitlab-ci
 ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/gitlab-ci/
 ExecStartPre=-/usr/bin/etcdctl mkdir /services/nginx/gitlab-ci/servers/
 ExecStartPre=/usr/bin/etcdctl set /services/nginx/gitlab-ci/root 'gitlab-ci.appunite.net'
-ExecStartPre=/usr/bin/docker pull sameersbn/gitlab-ci:7.12.2
+ExecStartPre=/usr/bin/docker pull sameersbn/gitlab-ci:7.14.0
 ExecStart=/bin/bash -c "\
           set -ex; \
           APP_ID=$(etcdctl get /services/nginx/gitlab-ci/appId 2>/dev/null); \
@@ -40,7 +40,7 @@ ExecStart=/bin/bash -c "\
 		--volume /var/run/docker.sock:/run/docker.sock \
 		--volume $(which docker):/bin/docker \
 		--volume /opt/gitlab-ci/data:/home/gitlab_ci/data \
-		sameersbn/gitlab-ci:7.12.2"
+		sameersbn/gitlab-ci:7.14.0"
 ExecStartPost=/usr/bin/etcdctl set /services/nginx/gitlab-ci/servers/1 "{\"ip\": \"${COREOS_PRIVATE_IPV4}\", \"port\": \"10032\"}"
 
 ExecStop=-/usr/bin/etcdctl rm /services/nginx/gitlab-ci/servers/1
