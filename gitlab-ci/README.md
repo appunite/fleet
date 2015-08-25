@@ -12,6 +12,14 @@ cat www-server.crt | etcdctl set /services/nginx/gitlab-ci/ssl-crt
 cat www-server.key | etcdctl set /services/nginx/gitlab-ci/ssl-key
 ```
 
+Set key storage for gitlab-ci
+
+```bash
+toolbox yum install pwgen
+toolbox pwgen -Bsv1 64 | etcdctl set /services/gitlab-ci-runner/session-key-base
+toolbox pwgen -Bsv1 64 | etcdctl set /services/gitlab-ci-runner/db-key-base
+```
+
 Run gitlab
 
 ```bash
