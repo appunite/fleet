@@ -6,6 +6,8 @@ Set `appId` and `appSecret` from you gitlab
 etcdctl mkdir /services/gitlab-ci
 etcdctl mkdir /services/nginx/gitlab-ci/appId ""
 etcdctl set /services/nginx/gitlab-ci/appSecret ""
+etcdctl set /services/nginx/gitlab-ci/secretsSessionKeyBase ""
+etcdctl set /services/nginx/gitlab-ci/secretesDbKeyBase ""
 etcdctl set /services/nginx/gitlab-ci/servers/
 etcdctl set /services/nginx/gitlab-ci/root 'gitlab-ci.example.com'
 cat www-server.crt | etcdctl set /services/nginx/gitlab-ci/ssl-crt
